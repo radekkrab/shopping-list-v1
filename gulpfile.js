@@ -11,6 +11,9 @@ const sourcemaps = require('gulp-sourcemaps')
 const autoprefixer = require('gulp-autoprefixer')
 const imagemin = require('gulp-imagemin')
 const htmlmin = require('gulp-htmlmin')
+const size = require('gulp-size')
+const newer = require('gulp-newer')
+const browsersync = require('browser-sync').create()
 const del = require('del')
 
 // Пути к изначальным файлам
@@ -29,7 +32,7 @@ const paths = {
         dest: 'dist/js/'
     },
     images: {
-        src: 'src/img/*',
+        src: 'src/img/**',
         dest: 'dist/img/'
     }
 
@@ -38,7 +41,7 @@ const paths = {
 // Задача очистки папки
 
 function clean() {
-    return del(['dist'])
+    return del(['dist/*', '!dist/img'])
 }
 
 // Задача минификация html
@@ -47,7 +50,11 @@ function clean() {
 function html() {
     return gulp.src(paths.html.src)
       .pipe(htmlmin({ collapseWhitespace: true }))
-      .pipe(gulp.dest(paths.html.dest));
+      .pipe(size({
+        showFiles: true
+      }))
+      .pipe(gulp.dest(paths.html.dest))
+      .pipe(browsersync.stream())
 }
 
 // Задача для обработки стилей
@@ -67,7 +74,11 @@ function styles() {
         suffix: '.min'
     }))
     .pipe(sourcemaps.write('.'))
+    .pipe(size({
+        showFiles: true
+    }))
     .pipe(gulp.dest(paths.styles.dest))
+    .pipe(browsersync.stream())
 }
 
 // Задача для обработки скриптов
@@ -81,15 +92,23 @@ function scripts() {
     .pipe(uglify())
     .pipe(concat('main.min.js'))
     .pipe(sourcemaps.write('.'))
+    .pipe(size({
+        showFiles: true
+    }))
     .pipe(gulp.dest(paths.scripts.dest))
+    .pipe(browsersync.stream())
 }
 
 // Задача по сжатию картинок
 
 function img() {
     return gulp.src(paths.images.src)
+           .pipe(newer(paths.images.dest))
            .pipe(imagemin({
               progressive: true
+           }))
+           .pipe(size({
+            showFiles: true
            }))
            .pipe(gulp.dest(paths.images.dest))
 }
@@ -98,8 +117,16 @@ function img() {
 // Задача отслеживание стилей, скриптов
 
 function watch() {
+    browsersync.init({
+        server: {
+            baseDir: "./dist/"
+        }
+    })
+    gulp.watch(paths.html.dest).on('change', browsersync.reload)
+    gulp.watch(paths.html.src, html)
     gulp.watch(paths.styles.src, styles)
     gulp.watch(paths.scripts.src, scripts)
+    gulp.watch(paths.images.src, img)
     
 }
 
