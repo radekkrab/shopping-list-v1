@@ -1,0 +1,33 @@
+* {
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    min-width: 300px;
+    max-width: 600px;
+    height: 100vh;
+    margin: 0 auto;
+    padding: 25px 10px;
+    background-color: rgb(7, 83, 247);
+    color: white;
+    border-radius: 25px;
+    
+}
+
+.nobullet {
+    list-style-type: none;
+}
+
+input {
+    border-radius: 25px;
+    font-size: 20px;
+}
+
+button {
+    border-radius: 25px;
+    font-size: 20px;
+    min-width: 30px;
+}
